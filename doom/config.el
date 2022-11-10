@@ -1,13 +1,13 @@
 ;;; $DOOMDIR/config.el -*- lexical-binding: t; -*-
 
-;; Place your private configuration here! Remember, you do not need to run 'doom
+;; Place your private configuration here! Remember, you do not need to run
+;; 'doom
 ;; sync' after modifying this file!
 
 
 ;; Some functionality uses this to identify you, e.g. GPG configuration, email
 ;; clients, file templates and snippets. It is optional.
-(setq user-full-name "Peter Cline"
-      user-mail-address "cline.peter@gmail.com")
+(setq user-full-name "Peter Cline" user-mail-address "cline.peter@gmail.com")
 (add-to-list 'initial-frame-alist '(fullscreen . maximized))
 (setq doom-localleader-key ",")
 
@@ -23,8 +23,10 @@
 ;; See 'C-h v doom-font' for documentation and more examples of what they
 ;; accept. For example:
 ;;
-(setq doom-font (font-spec :family "Fira Code" :size 15)
-      doom-variable-pitch-font (font-spec :family "Fira Sans" :size 14))
+(setq doom-font
+      (font-spec :family "Fira Code" :size 15)
+      doom-variable-pitch-font
+      (font-spec :family "Fira Sans" :size 14))
 ;;
 ;; If you or Emacs can't find your font, use 'M-x describe-font' to look them
 ;; up, `M-x eval-region' to execute elisp code, and 'M-x doom/reload-font' to
@@ -44,98 +46,150 @@
 (setq display-line-numbers-type t)
 
 (after! vterm
-  (set-popup-rule! "*doom:vterm-popup:*" :size 0.5 :vslot -4 :select t :quit nil :ttl 0 :side 'right)
-)
+        (set-popup-rule! "*doom:vterm-popup:*"
+                         :size 0.25
+                         :vslot -4
+                         :select t
+                         :quit nil
+                         :ttl 0
+                         :side 'bottom))
 
-;; If you use `org' and don't want your org files in the default location below,
+;; If you use `org' and don't want your org files in the default location
+;; below,
 ;; change `org-directory'. It must be set before org loads!
 (setq org-directory "~/Project/")
 (setq org-log-done 'time)
 
-(defun wrap-around-and-insert (&optional arg)
-  (interactive)
-  (sp-wrap-round)
-  (evil-insert 1))
+(defun wrap-around-and-insert
+       (&optional arg)
+       (interactive)
+       (sp-wrap-round)
+       (evil-insert 1))
 
 (after! smartparens
-  (smartparens-global-mode)
-  (map! :leader
-        (:prefix ("k" . "parens")
-         :desc "jump to end" "$" #'sp-end-of-sexp
-         :desc "jump to beginning" "^" #'sp-beginning-of-sexp
-         :desc "raise" "r" #'sp-raise-sexp
-         :desc "forward barf" "b" #'sp-forward-barf-sexp
-         :desc "forward slurp" "s" #'sp-forward-slurp-sexp
-         :desc "wrap" "w" #'wrap-around-and-insert)))
+        (smartparens-global-mode)
+        (map! :leader
+              (:prefix ("k" . "parens")
+                       :desc "jump to end"
+                       "$" #'sp-end-of-sexp
+                       :desc "jump to beginning"
+                       "^" #'sp-beginning-of-sexp
+                       :desc "raise"
+                       "r" #'sp-raise-sexp
+                       :desc "forward barf"
+                       "b" #'sp-forward-barf-sexp
+                       :desc "forward slurp"
+                       "s" #'sp-forward-slurp-sexp
+                       :desc "wrap"
+                       "w" #'wrap-around-and-insert)))
 
 (map! :leader :desc "Exec" "SPC" #'execute-extended-command)
 
 (map! :leader (:prefix "s" :desc "find references" "r" #'lsp-find-references))
 
-(after! org
-  (setq org-roam-directory "/home/petercline/org"))
+(after! org (setq org-roam-directory "/home/petercline/org"))
 
-(map! :leader (:prefix ("r" . "org-roam")
-                 :desc "toggle buffer" "h" #'org-roam-buffer-toggle
-                 :desc "find" "f" #'org-roam-node-find
-                 :desc "capture" "c" #'org-roam-capture
-                 :desc "capture today" "t" #'org-roam-dailies-capture-today
-                 :desc "capture manana" "m" #'org-roam-dailies-capture-tomorrow))
+(map! :leader
+      (:prefix ("r" . "org-roam")
+               :desc "toggle buffer"
+               "h" #'org-roam-buffer-toggle
+               :desc "find"
+               "f" #'org-roam-node-find
+               :desc "capture"
+               "c" #'org-roam-capture
+               :desc "capture today"
+               "t" #'org-roam-dailies-capture-today
+               :desc "capture manana"
+               "m" #'org-roam-dailies-capture-tomorrow))
 
 ;;CLOJURE
 ;;
-(defun clojure/fancify-symbols (mode)
+(defun
+  clojure/fancify-symbols
+  (mode)
   "Pretty symbols for Clojure's anonymous functions and sets,
   like (λ [a] (+ a 5)), ƒ(+ % 5), and ∈{2 4 6}."
-  (font-lock-add-keywords mode
-                          `(("(\\(fn\\)[[[:space:]]"
-                             (0 (progn (compose-region (match-beginning 1)
-                                                       (match-end 1) "λ")
-                                       nil)))
-                            ("(\\(partial\\)[[[:space:]]"
-                             (0 (progn (compose-region (match-beginning 1)
-                                                       (match-end 1) "Ƥ")
-                                       nil)))
-                            ("(\\(comp\\)[[[:space:]]"
-                             (0 (progn (compose-region (match-beginning 1)
-                                                       (match-end 1) "∘")
-                                       nil)))
-                            ("\\(#\\)("
-                             (0 (progn (compose-region (match-beginning 1)
-                                                       (match-end 1) "ƒ")
-                                       nil)))
-                            ("\\(#\\){"
-                             (0 (progn (compose-region (match-beginning 1)
-                                                       (match-end 1) "∈")
-                                       nil))))))
+  (font-lock-add-keywords
+    mode
+    `(("(\\(fn\\)[[[:space:]]"
+       (0 (progn (compose-region (match-beginning 1) (match-end 1) "λ") nil)))
+       ("(\\(partial\\)[[[:space:]]"
+        (0 (progn (compose-region (match-beginning 1) (match-end 1) "Ƥ") nil)))
+       ("(\\(comp\\)[[[:space:]]"
+        (0 (progn (compose-region (match-beginning 1) (match-end 1) "∘") nil)))
+       ("\\(#\\)("
+        (0 (progn (compose-region (match-beginning 1) (match-end 1) "ƒ") nil)))
+       ("\\(#\\){"
+        (0
+         (progn (compose-region (match-beginning 1) (match-end 1) "∈") nil))))))
+
+(defun
+  popwin-ensure-init
+  ()
+  (unless (boundp 'popwin:custom-initialized)
+          (setq popwin:custom-initialized nil))
+  (unless popwin:custom-initialized
+          (require 'popwin)
+          (popwin-mode 1)
+          (setq popwin:debug nil)
+          (global-set-key (kbd "C-z") popwin:keymap)
+          (push '(".*doom.vterm-popup.*" :regexp t :stick t)
+                popwin:special-display-config)
+          (push '(".*cider-repl.*" :regexp t :stick t)
+                popwin:special-display-config)
+          (push '("*cider-test-report*" :stick t) popwin:special-display-config)
+          (push "*cider-error*" popwin:special-display-config)
+          (setq popwin:custom-initialized t)))
 
 (after! clojure-mode
-  (progn
-    (clojure/fancify-symbols 'clojure-mode)
-    (require 'flycheck-clj-kondo)
-    (require 'popwin)
-    (popwin-mode 1)
-    (setq popwin:debug nil)
-    (global-set-key (kbd "C-z") popwin:keymap)
-    (push '("*cider-test-report*" :stick t) popwin:special-display-config)
-    (push "*cider-error*" popwin:special-display-config)))
+        (progn (clojure/fancify-symbols 'clojure-mode)
+               (require 'flycheck-clj-kondo)))
 
 (after! cider
-(set-popup-rules!
-   '(("^\\*cider-repl" :ignore t)))
-  (progn
-    (clojure/fancify-symbols 'cider-repl-mode)
-    (clojure/fancify-symbols 'cider-clojure-interaction-mode))
-  (map! :map cider-repl-mode-map "C-k" #'cider-repl-previous-input "C-j" #'cider-repl-next-input)
-  (map! :map cider-repl-mode-map :localleader (:prefix "r" :desc "last clojure buffer" "b" #'cider-switch-to-last-clojure-buffer))
-  (map! :map clojure-mode-map :localleader (:prefix "e"
-                                            :desc "eval func" "f" #'cider-eval-defun-at-point
-                                            :desc "eval list" "(" #'cider-eval-list-at-point
-                                            :desc "eval defun to comment" ";" #'cider-eval-defun-to-comment)))
+        (set-popup-rules! '())
+        (progn (clojure/fancify-symbols 'cider-repl-mode)
+               (clojure/fancify-symbols 'cider-clojure-interaction-mode))
+        (set-popup-rule! "*cider-repl*"
+                         :size 0.35
+                         :vslot -4
+                         :select t
+                         :quit nil
+                         :ttl 0
+                         :side 'bottom)
+        (set-popup-rule! "*cider-error*"
+                         :size 0.35
+                         :vslot -4
+                         :select t
+                         :quit t
+                         :ttl 0
+                         :side 'bottom)
+        (set-popup-rule! "*cider-test-report*"
+                         :size 0.35
+                         :vslot -4
+                         :select t
+                         :quit t
+                         :ttl 0
+                         :side 'bottom)
+        (map! :map cider-repl-mode-map
+              "C-k" #'cider-repl-previous-input
+              "C-j" #'cider-repl-next-input)
+        (map! :map cider-repl-mode-map
+              :localleader (:prefix "r"
+                                    :desc "last clojure buffer"
+                                    "b" #'cider-switch-to-last-clojure-buffer))
+        (map! :map clojure-mode-map
+              :localleader (:prefix "e"
+                                    :desc "eval func"
+                                    "f" #'cider-eval-defun-at-point
+                                    :desc "eval list"
+                                    "(" #'cider-eval-list-at-point
+                                    :desc "eval defun to comment"
+                                    ";" #'cider-eval-defun-to-comment)))
 
-(defun cider-repl-new-line-prompt (namespace)
-  "Return a prompt string that mentions NAMESPACE."
-  (format "%s\n:) " namespace))
+(defun cider-repl-new-line-prompt
+       (namespace)
+       "Return a prompt string that mentions NAMESPACE."
+       (format "%s\n:) " namespace))
 (setq cider-repl-prompt-function 'cider-repl-new-line-prompt)
 (setq popup-mode t)
 (setq cider-auto-jump-to-error t)
@@ -145,19 +199,11 @@
 (setq +popup-mode t)
 
 (setq zprint-bin-path "~/bin/zprint")
-(load "~/Projects/zprint.el/zprint.el" )
+(load "~/Projects/zprint.el/zprint.el")
 (add-hook 'clojure-mode-hook 'zprint-mode)
-
-(defun toggle-window-dedicated ()
-  "Control whether or not Emacs is allowed to display another
-buffer in current window."
-  (interactive)
-  (message
-   (if (let (window (get-buffer-window (current-buffer)))
-         (set-window-dedicated-p window (not (window-dedicated-p window))))
-       "%s: Can't touch this!"
-     "%s is up for grabs.")
-   (current-buffer)))
+; (add-hook 'vterm-mode-hook 'evil-emacs-state)
+; great experiment, didn't work out
+; (popwin-ensure-init)
 
 ;; Whenever you reconfigure a package, make sure to wrap your config in an
 ;; `after!' block, otherwise Doom's defaults may override your settings. E.g.
