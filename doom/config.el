@@ -47,7 +47,7 @@
 
 (after! vterm
         (set-popup-rule! "*doom:vterm-popup:*"
-                         :size 0.25
+                         :size 0.35
                          :vslot -4
                          :select t
                          :quit nil
