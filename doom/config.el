@@ -66,6 +66,13 @@
        (sp-wrap-round)
        (evil-insert 1))
 
+(defun set-ns-and-push-current
+    ()
+    (interactive)
+    (cider-repl-set-ns (cider-current-ns))
+    (cider-insert-defun-in-repl)
+    (cider-switch-to-repl-buffer))
+
 (after! smartparens
         (smartparens-global-mode)
         (map! :leader
@@ -87,7 +94,7 @@
 
 (map! :leader (:prefix "s" :desc "find references" "r" #'lsp-find-references))
 
-(after! org (setq org-roam-directory "/home/petercline/org"))
+(after! org (setq org-roam-directory "/home/petercline/repos"))
 
 (map! :leader
       (:prefix ("r" . "org-roam")
@@ -122,24 +129,6 @@
        ("\\(#\\){"
         (0
          (progn (compose-region (match-beginning 1) (match-end 1) "∈") nil))))))
-
-(defun
-  popwin-ensure-init
-  ()
-  (unless (boundp 'popwin:custom-initialized)
-          (setq popwin:custom-initialized nil))
-  (unless popwin:custom-initialized
-          (require 'popwin)
-          (popwin-mode 1)
-          (setq popwin:debug nil)
-          (global-set-key (kbd "C-z") popwin:keymap)
-          (push '(".*doom.vterm-popup.*" :regexp t :stick t)
-                popwin:special-display-config)
-          (push '(".*cider-repl.*" :regexp t :stick t)
-                popwin:special-display-config)
-          (push '("*cider-test-report*" :stick t) popwin:special-display-config)
-          (push "*cider-error*" popwin:special-display-config)
-          (setq popwin:custom-initialized t)))
 
 (after! clojure-mode
         (progn (clojure/fancify-symbols 'clojure-mode)
@@ -197,13 +186,11 @@
 ; (setq pop-up-windows t)
 (setq clojure-toplevel-inside-comment-form t)
 (setq +popup-mode t)
+(setq cider-repl-require-ns-on-set t)
 
 (setq zprint-bin-path "~/bin/zprint")
 (load "~/Projects/zprint.el/zprint.el")
 (add-hook 'clojure-mode-hook 'zprint-mode)
-; (add-hook 'vterm-mode-hook 'evil-emacs-state)
-; great experiment, didn't work out
-; (popwin-ensure-init)
 
 ;; Whenever you reconfigure a package, make sure to wrap your config in an
 ;; `after!' block, otherwise Doom's defaults may override your settings. E.g.
@@ -238,7 +225,8 @@
 ;; they are implemented.
 
 (global-set-key (kbd "s-r") 'cider-eval-buffer)
-(global-set-key (kbd "s-p") 'cider-eval-defun-at-point)
+(global-set-key (kbd "s-R") 'cider-ns-refresh)
+(global-set-key (kbd "s-p") 'set-ns-and-push-current)
 (global-set-key (kbd "s-l") 'sp-forward-slurp-sexp)
 (global-set-key (kbd "s-'") 'sp-raise-sexp)
 (global-set-key (kbd "s-;") 'wrap-around-and-insert)
@@ -253,14 +241,7 @@
 (global-set-key (kbd "s-k") 'cider-repl-previous-input)
 (global-set-key (kbd "s-<down>") 'cider-repl-next-input)
 (global-set-key (kbd "s-j") 'cider-repl-next-input)
-(global-set-key (kbd "<C-tab>") 'consult-buffer)
-
+(global-set-key (kbd "s-n") 'evil-window-next)
+(global-set-key (kbd "s-N") 'evil-window-prev)
 (global-set-key (kbd "s-d") '+lookup/definition)
 (global-set-key (kbd "s-u") 'cider-xref-fn-refs)
-
-; maybe solves nothing
-; (global-set-key (kbd "s-i") 'toggle-window-dedicated)
-
-; nah
-; (global-set-key (kbd "<M-tab>")  'consult-buffer)
-; (global-set-key (kbd "<M-tab>") '+vertico/switch-workspace-buffer)
