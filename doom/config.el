@@ -67,11 +67,18 @@
        (evil-insert 1))
 
 (defun set-ns-and-push-current
+       ()
+       (interactive)
+       (cider-repl-set-ns (cider-current-ns))
+       (cider-insert-defun-in-repl)
+       (cider-switch-to-repl-buffer))
+
+(defun toggle-repl-or-last-buffer
     ()
     (interactive)
-    (cider-repl-set-ns (cider-current-ns))
-    (cider-insert-defun-in-repl)
-    (cider-switch-to-repl-buffer))
+    (if (string-prefix-p "*cider-repl" (buffer-name (current-buffer)))
+        (cider-switch-to-last-clojure-buffer)
+       (cider-switch-to-repl-buffer)))
 
 (after! smartparens
         (smartparens-global-mode)
@@ -132,12 +139,19 @@
 
 (after! clojure-mode
         (progn (clojure/fancify-symbols 'clojure-mode)
-               (require 'flycheck-clj-kondo)))
+               (require 'flycheck-clj-kondo))
+        (map! :map clojure-mode-map
+              :leader (:prefix "o" :desc "Toggle REPL" "r" #'toggle-repl-or-last-buffer)
+              :localleader (:prefix "e"
+                                    :desc "eval ns" "n" #'cider-eval-ns-form
+                                    :desc "eval func" "f" #'cider-eval-defun-at-point
+                                    :desc "eval list" "(" #'cider-eval-list-at-point
+                                    :desc "eval defun to comment" ";" #'cider-eval-defun-to-comment)))
 
 (after! cider
-        (set-popup-rules! '())
         (progn (clojure/fancify-symbols 'cider-repl-mode)
                (clojure/fancify-symbols 'cider-clojure-interaction-mode))
+        (set-popup-rules! '())
         (set-popup-rule! "*cider-repl*"
                          :size 0.35
                          :vslot -4
@@ -158,32 +172,16 @@
                          :select t
                          :quit t
                          :ttl 0
-                         :side 'bottom)
-        (map! :map cider-repl-mode-map
-              "C-k" #'cider-repl-previous-input
-              "C-j" #'cider-repl-next-input)
-        (map! :map cider-repl-mode-map
-              :localleader (:prefix "r"
-                                    :desc "last clojure buffer"
-                                    "b" #'cider-switch-to-last-clojure-buffer))
-        (map! :map clojure-mode-map
-              :localleader (:prefix "e"
-                                    :desc "eval func"
-                                    "f" #'cider-eval-defun-at-point
-                                    :desc "eval list"
-                                    "(" #'cider-eval-list-at-point
-                                    :desc "eval defun to comment"
-                                    ";" #'cider-eval-defun-to-comment)))
+                         :side 'bottom))
 
 (defun cider-repl-new-line-prompt
        (namespace)
        "Return a prompt string that mentions NAMESPACE."
-       (format "%s\n:) " namespace))
+       (format "%s\n# " namespace))
+
 (setq cider-repl-prompt-function 'cider-repl-new-line-prompt)
-(setq popup-mode t)
 (setq cider-auto-jump-to-error t)
 (setq cider-show-error-buffer t)
-; (setq pop-up-windows t)
 (setq clojure-toplevel-inside-comment-form t)
 (setq +popup-mode t)
 (setq cider-repl-require-ns-on-set t)
@@ -223,8 +221,17 @@
 ;;
 ;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
 ;; they are implemented.
+;;
 
-(global-set-key (kbd "s-r") 'cider-eval-buffer)
+; (use-package! cider
+;               :after clojure-mode
+;               :config (set-lookup-handlers! 'cider-mode nil))
+
+; (use-package! clj-refactor
+;               :after clojure-mode
+;               :config (set-lookup-handlers! 'clj-refactor-mode nil))
+
+(global-set-key (kbd "s-r") 'cider-eval-ns-form)
 (global-set-key (kbd "s-R") 'cider-ns-refresh)
 (global-set-key (kbd "s-p") 'set-ns-and-push-current)
 (global-set-key (kbd "s-l") 'sp-forward-slurp-sexp)
@@ -244,4 +251,6 @@
 (global-set-key (kbd "s-n") 'evil-window-next)
 (global-set-key (kbd "s-N") 'evil-window-prev)
 (global-set-key (kbd "s-d") '+lookup/definition)
-(global-set-key (kbd "s-u") 'cider-xref-fn-refs)
+(global-set-key (kbd "s-u") '+lookup/references)
+(global-set-key (kbd "s-m") 'toggle-repl-or-last-buffer)
+(global-set-key (kbd "s-,") 'cider-repl-set-ns)
