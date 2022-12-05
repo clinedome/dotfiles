@@ -231,7 +231,7 @@
 ;               :after clojure-mode
 ;               :config (set-lookup-handlers! 'clj-refactor-mode nil))
 
-(global-set-key (kbd "s-r") 'cider-eval-ns-form)
+(global-set-key (kbd "s-r") 'cider-eval-buffer)
 (global-set-key (kbd "s-R") 'cider-ns-refresh)
 (global-set-key (kbd "s-p") 'set-ns-and-push-current)
 (global-set-key (kbd "s-l") 'sp-forward-slurp-sexp)
