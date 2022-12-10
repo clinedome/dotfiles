@@ -60,6 +60,28 @@
 (setq org-directory "~/Project/")
 (setq org-log-done 'time)
 
+(defun push-run-test-at-point ()
+  (interactive)
+  (let ((ns  (get-text-property (point) 'ns))
+        (var (get-text-property (point) 'var)))
+    (if (and ns var)
+        ;; we're in a `cider-test-report-mode' buffer
+        ;; or on a highlighted failed/erred test definition
+        (progn
+          (cider-test-update-last-test ns var)
+          (cider-test-execute ns (list var)))
+      ;; we're in a `clojure-mode' buffer
+      (let* ((ns  (clojure-find-ns))
+             (def (clojure-find-def)) ; it's a list of the form (deftest something)
+             (deftype (car def))
+             (var (cadr def)))
+        (if (and ns (member deftype cider-test-defining-forms))
+            (progn
+              (cider-eval-buffer)
+              (cider-insert-in-repl (concat "(user/run-tests #'" ns "/" var ")") nil))))
+          (message "No test at point"))))
+
+
 (defun wrap-around-and-insert
        (&optional arg)
        (interactive)
@@ -159,13 +181,13 @@
                          :quit nil
                          :ttl 0
                          :side 'bottom)
-        (set-popup-rule! "*cider-error*"
-                         :size 0.35
-                         :vslot -4
-                         :select t
-                         :quit t
-                         :ttl 0
-                         :side 'bottom)
+        ; (set-popup-rule! "*cider-error*"
+                         ; :size 0.35
+                         ; :vslot -4
+                         ; :select t
+                         ; :quit t
+                         ; :ttl 0
+                         ; :side 'bottom)
         (set-popup-rule! "*cider-test-report*"
                          :size 0.35
                          :vslot -4
@@ -254,3 +276,5 @@
 (global-set-key (kbd "s-u") '+lookup/references)
 (global-set-key (kbd "s-m") 'toggle-repl-or-last-buffer)
 (global-set-key (kbd "s-,") 'cider-repl-set-ns)
+(global-set-key (kbd "s-K") 'cider-repl-clear-buffer)
+(global-set-key (kbd "s-i") 'push-run-test-at-point)
