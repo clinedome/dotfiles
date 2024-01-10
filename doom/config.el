@@ -10,6 +10,7 @@
 (setq user-full-name "Peter Cline" user-mail-address "cline.peter@gmail.com")
 (add-to-list 'initial-frame-alist '(fullscreen . maximized))
 (setq doom-localleader-key ",")
+;; (company +childframe)
 
 ;; Doom exposes five (optional) variables for controlling fonts in Doom:
 ;;
@@ -123,7 +124,7 @@
 
 (map! :leader (:prefix "s" :desc "find references" "r" #'lsp-find-references))
 
-(after! org (setq org-roam-directory "/home/petercline/repos"))
+(after! org (setq org-roam-directory "/Users/petercline/repos"))
 
 (map! :leader
       (:prefix ("r" . "org-roam")
@@ -158,6 +159,9 @@
        ("\\(#\\){"
         (0
          (progn (compose-region (match-beginning 1) (match-end 1) "∈") nil))))))
+
+(after! js2-mode
+  (require 'prettier-js))
 
 (after! clojure-mode
         (progn (clojure/fancify-symbols 'clojure-mode)
@@ -211,6 +215,135 @@
 (setq zprint-bin-path "~/bin/zprint")
 (load "~/Projects/zprint.el/zprint.el")
 (add-hook 'clojure-mode-hook 'zprint-mode)
+(add-hook 'js2-mode-hook 'prettier-js-mode)
+
+;;
+;; copilot settings from https://robert.kra.hn/posts/2023-02-22-copilot-emacs-setup/
+;;
+
+(after! copilot
+  ;; global-copilot-mode will sometimes be a bit too eager, so we disable in some modes completely:
+  ;;
+  (defun rk/no-copilot-mode ()
+    "Helper for `rk/no-copilot-modes'."
+    (copilot-mode -1))
+
+  (defvar rk/no-copilot-modes '(shell-mode
+                                inferior-python-mode
+                                eshell-mode
+                                term-mode
+                                vterm-mode
+                                comint-mode
+                                compilation-mode
+                                debugger-mode
+                                dired-mode-hook
+                                compilation-mode-hook
+                                flutter-mode-hook
+                                minibuffer-mode-hook
+                                cider-mode-hook
+                                cider-repl-mode-hook
+                                cider-stacktrace-mode-hook
+                                cider-inspector-mode-hook
+                                cider-test-report-mode-hook
+                                cider-browse-ns-mode-hook
+                                cider-classpath-mode-hook
+                                cider-docview-mode-hook
+                                cider-macroexpansion-mode-hook
+                                cider-popup-buffer-mode-hook
+                                cider-profile-report-mode-hook
+                                cider-repl-history-mode-hook)
+    "Modes in which copilot is inconvenient.")
+
+
+  (defun rk/copilot-disable-predicate ()
+    "When copilot should not automatically show completions."
+    (or rk/copilot-manual-mode
+        (member major-mode rk/no-copilot-modes)
+        (company--active-p)))
+
+(add-to-list 'copilot-disable-predicates #'rk/copilot-disable-predicate)
+
+;; Then, it is also convenient to have the overlays not appear automatically but on-demand:
+;;
+(defvar rk/copilot-manual-mode nil
+  "When `t' will only show completions when manually triggered, e.g. via M-C-<return>.")
+
+(defun rk/copilot-change-activation ()
+  "Switch between three activation modes:
+- automatic: copilot will automatically overlay completions
+- manual: you need to press a key (M-C-<return>) to trigger completions
+- off: copilot is completely disabled."
+  (interactive)
+  (if (and copilot-mode rk/copilot-manual-mode)
+      (progn
+        (message "deactivating copilot")
+        (global-copilot-mode -1)
+        (setq rk/copilot-manual-mode nil))
+    (if copilot-mode
+        (progn
+          (message "activating copilot manual mode")
+          (setq rk/copilot-manual-mode t))
+      (message "activating copilot mode")
+      (global-copilot-mode))))
+
+(define-key global-map (kbd "M-C-<escape>") #'rk/copilot-change-activation)
+;; M-C-<escape> will now cycle between three states automatic, manual and off.
+
+;; copilot-specific keys
+;;
+(defun rk/copilot-complete-or-accept ()
+  "Command that either triggers a completion or accepts one if one
+is available. Useful if you tend to hammer your keys like I do."
+  (interactive)
+  (if (copilot--overlay-visible)
+      (progn
+        (copilot-accept-completion)
+        (open-line 1)
+        (next-line))
+    (copilot-complete)))
+
+(define-key copilot-mode-map (kbd "M-C-<next>") #'copilot-next-completion)
+(define-key copilot-mode-map (kbd "M-C-<prior>") #'copilot-previous-completion)
+(define-key copilot-mode-map (kbd "M-C-<right>") #'copilot-accept-completion-by-word)
+(define-key copilot-mode-map (kbd "M-C-<down>") #'copilot-accept-completion-by-line)
+(define-key global-map (kbd "M-C-<return>") #'rk/copilot-complete-or-accept)
+(define-key global-map (kbd "M-<return>") #'rk/copilot-complete-or-accept)
+(define-key global-map (kbd "s-g") #'rk/copilot-complete-or-accept)
+;;
+;; make the tab key do the thing
+;;
+(defun rk/copilot-tab ()
+  "Tab command that will complet with copilot if a completion is
+available. Otherwise will try company, yasnippet or normal
+tab-indent."
+  (interactive)
+  (or (copilot-accept-completion)
+      (company-yasnippet-or-completion)
+      (indent-for-tab-command)))
+
+(define-key global-map (kbd "<tab>") #'rk/copilot-tab)
+
+;; set up cancel to work with copilot
+;;
+(defun rk/copilot-quit ()
+  "Run `copilot-clear-overlay' or `keyboard-quit'. If copilot is
+cleared, make sure the overlay doesn't come back too soon."
+  (interactive)
+  (condition-case err
+      (when copilot--overlay
+        (lexical-let ((pre-copilot-disable-predicates copilot-disable-predicates))
+          (setq copilot-disable-predicates (list (lambda () t)))
+          (copilot-clear-overlay)
+          (run-with-idle-timer
+           1.0
+           nil
+           (lambda ()
+             (setq copilot-disable-predicates pre-copilot-disable-predicates)))))
+    (error handler)))
+
+(advice-add 'keyboard-quit :before #'rk/copilot-quit)
+
+)
 
 ;; Whenever you reconfigure a package, make sure to wrap your config in an
 ;; `after!' block, otherwise Doom's defaults may override your settings. E.g.
@@ -245,13 +378,36 @@
 ;; they are implemented.
 ;;
 
-; (use-package! cider
-;               :after clojure-mode
-;               :config (set-lookup-handlers! 'cider-mode nil))
+(use-package! cider
+              :after clojure-mode
+              :config (set-lookup-handlers! 'cider-mode nil))
 
-; (use-package! clj-refactor
-;               :after clojure-mode
-;               :config (set-lookup-handlers! 'clj-refactor-mode nil))
+(use-package! clj-refactor
+              :after clojure-mode
+              :config (set-lookup-handlers! 'clj-refactor-mode nil))
+
+;; accept completion from copilot and fallback to company
+(use-package! copilot
+  :hook (prog-mode . copilot-mode)
+  :bind (:map copilot-completion-map
+              ("<tab>" . 'copilot-accept-completion)
+              ("TAB" . 'copilot-accept-completion)
+              ("C-TAB" . 'copilot-accept-completion-by-word)
+              ("C-<tab>" . 'copilot-accept-completion-by-word)))
+
+(after! (evil copilot)
+  ;; Define the custom function that either accepts the completion or does the default behavior
+  (defun my/copilot-tab-or-default ()
+    (interactive)
+    (if (and (bound-and-true-p copilot-mode)
+             ;; Add any other conditions to check for active copilot suggestions if necessary
+             )
+        (copilot-accept-completion)
+      (evil-insert 1))) ; Default action to insert a tab. Adjust as needed.
+
+  ;; Bind the custom function to <tab> in Evil's insert state
+  (evil-define-key 'insert 'global (kbd "s-e") 'my/copilot-tab-or-default))
+
 
 (global-set-key (kbd "s-r") 'cider-eval-buffer)
 (global-set-key (kbd "s-R") 'cider-ns-refresh)
