@@ -192,4 +192,4 @@
 
        :config
        ;;literate
-       (default +bindings +smartparens))
+       (default +bindings +smartparens +zprint-mode +zprint-format))

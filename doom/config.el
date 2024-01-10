@@ -47,13 +47,13 @@
 (setq display-line-numbers-type t)
 
 (after! vterm
-        (set-popup-rule! "*doom:vterm-popup:*"
-                         :size 0.35
-                         :vslot -4
-                         :select t
-                         :quit nil
-                         :ttl 0
-                         :side 'bottom))
+  (set-popup-rule! "*doom:vterm-popup:*"
+    :size 0.35
+    :vslot -4
+    :select t
+    :quit nil
+    :ttl 0
+    :side 'bottom))
 
 ;; If you use `org' and don't want your org files in the default location
 ;; below,
@@ -80,45 +80,45 @@
             (progn
               (cider-eval-buffer)
               (cider-insert-in-repl (concat "(user/run-tests #'" ns "/" var ")") nil))))
-          (message "No test at point"))))
+      (message "No test at point"))))
 
 
 (defun wrap-around-and-insert
-       (&optional arg)
-       (interactive)
-       (sp-wrap-round)
-       (evil-insert 1))
+    (&optional arg)
+  (interactive)
+  (sp-wrap-round)
+  (evil-insert 1))
 
 (defun set-ns-and-push-current
-       ()
-       (interactive)
-       (cider-repl-set-ns (cider-current-ns))
-       (cider-insert-defun-in-repl)
-       (cider-switch-to-repl-buffer))
+    ()
+  (interactive)
+  (cider-repl-set-ns (cider-current-ns))
+  (cider-insert-defun-in-repl)
+  (cider-switch-to-repl-buffer))
 
 (defun toggle-repl-or-last-buffer
     ()
-    (interactive)
-    (if (string-prefix-p "*cider-repl" (buffer-name (current-buffer)))
-        (cider-switch-to-last-clojure-buffer)
-       (cider-switch-to-repl-buffer)))
+  (interactive)
+  (if (string-prefix-p "*cider-repl" (buffer-name (current-buffer)))
+      (cider-switch-to-last-clojure-buffer)
+    (cider-switch-to-repl-buffer)))
 
 (after! smartparens
-        (smartparens-global-mode)
-        (map! :leader
-              (:prefix ("k" . "parens")
-                       :desc "jump to end"
-                       "$" #'sp-end-of-sexp
-                       :desc "jump to beginning"
-                       "^" #'sp-beginning-of-sexp
-                       :desc "raise"
-                       "r" #'sp-raise-sexp
-                       :desc "forward barf"
-                       "b" #'sp-forward-barf-sexp
-                       :desc "forward slurp"
-                       "s" #'sp-forward-slurp-sexp
-                       :desc "wrap"
-                       "w" #'wrap-around-and-insert)))
+  (smartparens-global-mode)
+  (map! :leader
+        (:prefix ("k" . "parens")
+         :desc "jump to end"
+         "$" #'sp-end-of-sexp
+         :desc "jump to beginning"
+         "^" #'sp-beginning-of-sexp
+         :desc "raise"
+         "r" #'sp-raise-sexp
+         :desc "forward barf"
+         "b" #'sp-forward-barf-sexp
+         :desc "forward slurp"
+         "s" #'sp-forward-slurp-sexp
+         :desc "wrap"
+         "w" #'wrap-around-and-insert)))
 
 (map! :leader :desc "Exec" "SPC" #'execute-extended-command)
 
@@ -128,83 +128,84 @@
 
 (map! :leader
       (:prefix ("r" . "org-roam")
-               :desc "toggle buffer"
-               "h" #'org-roam-buffer-toggle
-               :desc "find"
-               "f" #'org-roam-node-find
-               :desc "capture"
-               "c" #'org-roam-capture
-               :desc "capture today"
-               "t" #'org-roam-dailies-capture-today
-               :desc "capture manana"
-               "m" #'org-roam-dailies-capture-tomorrow))
+       :desc "toggle buffer"
+       "h" #'org-roam-buffer-toggle
+       :desc "find"
+       "f" #'org-roam-node-find
+       :desc "capture"
+       "c" #'org-roam-capture
+       :desc "capture today"
+       "t" #'org-roam-dailies-capture-today
+       :desc "capture manana"
+       "m" #'org-roam-dailies-capture-tomorrow))
 
 ;;CLOJURE
 ;;
 (defun
-  clojure/fancify-symbols
-  (mode)
+    clojure/fancify-symbols
+    (mode)
   "Pretty symbols for Clojure's anonymous functions and sets,
   like (λ [a] (+ a 5)), ƒ(+ % 5), and ∈{2 4 6}."
   (font-lock-add-keywords
-    mode
-    `(("(\\(fn\\)[[[:space:]]"
-       (0 (progn (compose-region (match-beginning 1) (match-end 1) "λ") nil)))
-       ("(\\(partial\\)[[[:space:]]"
-        (0 (progn (compose-region (match-beginning 1) (match-end 1) "Ƥ") nil)))
-       ("(\\(comp\\)[[[:space:]]"
-        (0 (progn (compose-region (match-beginning 1) (match-end 1) "∘") nil)))
-       ("\\(#\\)("
-        (0 (progn (compose-region (match-beginning 1) (match-end 1) "ƒ") nil)))
-       ("\\(#\\){"
-        (0
-         (progn (compose-region (match-beginning 1) (match-end 1) "∈") nil))))))
+   mode
+   `(("(\\(fn\\)[[[:space:]]"
+      (0 (progn (compose-region (match-beginning 1) (match-end 1) "λ") nil)))
+     ("(\\(partial\\)[[[:space:]]"
+      (0 (progn (compose-region (match-beginning 1) (match-end 1) "Ƥ") nil)))
+     ("(\\(comp\\)[[[:space:]]"
+      (0 (progn (compose-region (match-beginning 1) (match-end 1) "∘") nil)))
+     ("\\(#\\)("
+      (0 (progn (compose-region (match-beginning 1) (match-end 1) "ƒ") nil)))
+     ("\\(#\\){"
+      (0
+       (progn (compose-region (match-beginning 1) (match-end 1) "∈") nil))))))
 
 (after! js2-mode
   (require 'prettier-js))
 
 (after! clojure-mode
-        (progn (clojure/fancify-symbols 'clojure-mode)
-               (require 'flycheck-clj-kondo))
-        (map! :map clojure-mode-map
-              :leader (:prefix "o" :desc "Toggle REPL" "r" #'toggle-repl-or-last-buffer)
-              :localleader (:prefix "e"
-                                    :desc "eval ns" "n" #'cider-eval-ns-form
-                                    :desc "eval func" "f" #'cider-eval-defun-at-point
-                                    :desc "eval list" "(" #'cider-eval-list-at-point
-                                    :desc "eval defun to comment" ";" #'cider-eval-defun-to-comment)))
+  (progn (clojure/fancify-symbols 'clojure-mode)
+         (require 'flycheck-clj-kondo))
+  (map! :map clojure-mode-map
+        :leader (:prefix "o" :desc "Toggle REPL" "r" #'toggle-repl-or-last-buffer)
+        :localleader (:prefix "e"
+                      :desc "eval ns" "n" #'cider-eval-ns-form
+                      :desc "eval func" "f" #'cider-eval-defun-at-point
+                      :desc "eval list" "(" #'cider-eval-list-at-point
+                      :desc "eval defun to comment" ";" #'cider-eval-defun-to-comment)))
 
 (after! cider
-        (progn (clojure/fancify-symbols 'cider-repl-mode)
-               (clojure/fancify-symbols 'cider-clojure-interaction-mode))
-        (set-popup-rules! '())
-        (set-popup-rule! "*cider-repl*"
-                         :size 0.35
-                         :vslot -4
-                         :select t
-                         :quit nil
-                         :ttl 0
-                         :side 'bottom)
-        ; (set-popup-rule! "*cider-error*"
-                         ; :size 0.35
-                         ; :vslot -4
-                         ; :select t
-                         ; :quit t
-                         ; :ttl 0
-                         ; :side 'bottom)
-        (set-popup-rule! "*cider-test-report*"
-                         :size 0.35
-                         :vslot -4
-                         :select t
-                         :quit t
-                         :ttl 0
-                         :side 'bottom))
+  (progn (clojure/fancify-symbols 'cider-repl-mode)
+         (clojure/fancify-symbols 'cider-clojure-interaction-mode))
+  (set-popup-rules! '())
+  (set-popup-rule! "*cider-repl*"
+    :size 0.35
+    :vslot -4
+    :select t
+    :quit nil
+    :ttl 0
+    :side 'bottom)
+                                        ; (set-popup-rule! "*cider-error*"
+                                        ; :size 0.35
+                                        ; :vslot -4
+                                        ; :select t
+                                        ; :quit t
+                                        ; :ttl 0
+                                        ; :side 'bottom)
+  (set-popup-rule! "*cider-test-report*"
+    :size 0.35
+    :vslot -4
+    :select t
+    :quit t
+    :ttl 0
+    :side 'bottom))
 
 (defun cider-repl-new-line-prompt
-       (namespace)
-       "Return a prompt string that mentions NAMESPACE."
-       (format "%s\n# " namespace))
+    (namespace)
+  "Return a prompt string that mentions NAMESPACE."
+  (format "%s\n# " namespace))
 
+(setq inhibit-splash-screen t)
 (setq cider-repl-prompt-function 'cider-repl-new-line-prompt)
 (setq cider-auto-jump-to-error t)
 (setq cider-show-error-buffer t)
@@ -212,7 +213,7 @@
 (setq +popup-mode t)
 (setq cider-repl-require-ns-on-set t)
 
-(setq zprint-bin-path "~/bin/zprint")
+(setq zprint-bin-path "/Users/petercline/bin/zprint")
 (load "~/Projects/zprint.el/zprint.el")
 (add-hook 'clojure-mode-hook 'zprint-mode)
 (add-hook 'js2-mode-hook 'prettier-js-mode)
@@ -240,6 +241,8 @@
                                 compilation-mode-hook
                                 flutter-mode-hook
                                 minibuffer-mode-hook
+                                elisp-mode
+                                clojure-mode
                                 cider-mode-hook
                                 cider-repl-mode-hook
                                 cider-stacktrace-mode-hook
@@ -254,96 +257,96 @@
                                 cider-repl-history-mode-hook)
     "Modes in which copilot is inconvenient.")
 
-
   (defun rk/copilot-disable-predicate ()
     "When copilot should not automatically show completions."
     (or rk/copilot-manual-mode
         (member major-mode rk/no-copilot-modes)
         (company--active-p)))
 
-(add-to-list 'copilot-disable-predicates #'rk/copilot-disable-predicate)
+  (add-to-list 'copilot-disable-predicates #'rk/copilot-disable-predicate)
 
-;; Then, it is also convenient to have the overlays not appear automatically but on-demand:
-;;
-(defvar rk/copilot-manual-mode nil
-  "When `t' will only show completions when manually triggered, e.g. via M-C-<return>.")
+  ;; Then, it is also convenient to have the overlays not appear automatically but on-demand:
+  ;;
+  (defvar rk/copilot-manual-mode nil
+    "When `t' will only show completions when manually triggered, e.g. via M-C-<return>.")
 
-(defun rk/copilot-change-activation ()
-  "Switch between three activation modes:
+  (defun rk/copilot-change-activation ()
+    "Switch between three activation modes:
 - automatic: copilot will automatically overlay completions
 - manual: you need to press a key (M-C-<return>) to trigger completions
 - off: copilot is completely disabled."
-  (interactive)
-  (if (and copilot-mode rk/copilot-manual-mode)
-      (progn
-        (message "deactivating copilot")
-        (global-copilot-mode -1)
-        (setq rk/copilot-manual-mode nil))
-    (if copilot-mode
+    (interactive)
+    (if (and copilot-mode rk/copilot-manual-mode)
         (progn
-          (message "activating copilot manual mode")
-          (setq rk/copilot-manual-mode t))
-      (message "activating copilot mode")
-      (global-copilot-mode))))
+          (message "deactivating copilot")
+          (global-copilot-mode -1)
+          (setq rk/copilot-manual-mode nil))
+      (if copilot-mode
+          (progn
+            (message "activating copilot manual mode")
+            (setq rk/copilot-manual-mode t))
+        (message "activating copilot mode")
+        (global-copilot-mode))))
 
-(define-key global-map (kbd "M-C-<escape>") #'rk/copilot-change-activation)
-;; M-C-<escape> will now cycle between three states automatic, manual and off.
+  (define-key global-map (kbd "M-C-<escape>") #'rk/copilot-change-activation)
+  ;; M-C-<escape> will now cycle between three states automatic, manual and off.
 
-;; copilot-specific keys
-;;
-(defun rk/copilot-complete-or-accept ()
-  "Command that either triggers a completion or accepts one if one
+  ;; copilot-specific keys
+  ;;
+  (defun rk/copilot-complete-or-accept ()
+    "Command that either triggers a completion or accepts one if one
 is available. Useful if you tend to hammer your keys like I do."
-  (interactive)
-  (if (copilot--overlay-visible)
-      (progn
-        (copilot-accept-completion)
-        (open-line 1)
-        (next-line))
-    (copilot-complete)))
+    (interactive)
+    (if (copilot--overlay-visible)
+        (progn
+          (copilot-accept-completion)
+          (open-line 1)
+          (next-line))
+      (copilot-complete)))
 
-(define-key copilot-mode-map (kbd "M-C-<next>") #'copilot-next-completion)
-(define-key copilot-mode-map (kbd "M-C-<prior>") #'copilot-previous-completion)
-(define-key copilot-mode-map (kbd "M-C-<right>") #'copilot-accept-completion-by-word)
-(define-key copilot-mode-map (kbd "M-C-<down>") #'copilot-accept-completion-by-line)
-(define-key global-map (kbd "M-C-<return>") #'rk/copilot-complete-or-accept)
-(define-key global-map (kbd "M-<return>") #'rk/copilot-complete-or-accept)
-(define-key global-map (kbd "s-g") #'rk/copilot-complete-or-accept)
-;;
-;; make the tab key do the thing
-;;
-(defun rk/copilot-tab ()
-  "Tab command that will complet with copilot if a completion is
+  (define-key copilot-mode-map (kbd "M-C-<next>") #'copilot-next-completion)
+  (define-key copilot-mode-map (kbd "<backtab>") #'copilot-next-completion)
+  (define-key copilot-mode-map (kbd "M-C-<prior>") #'copilot-previous-completion)
+  (define-key copilot-mode-map (kbd "M-C-<right>") #'copilot-accept-completion-by-word)
+  (define-key copilot-mode-map (kbd "M-C-<down>") #'copilot-accept-completion-by-line)
+  (define-key global-map (kbd "M-C-<return>") #'rk/copilot-complete-or-accept)
+  (define-key global-map (kbd "M-<return>") #'rk/copilot-complete-or-accept)
+  (define-key global-map (kbd "s-g") #'rk/copilot-complete-or-accept)
+  ;;
+  ;; make the tab key do the thing
+  ;;
+  (defun rk/copilot-tab ()
+    "Tab command that will complet with copilot if a completion is
 available. Otherwise will try company, yasnippet or normal
 tab-indent."
-  (interactive)
-  (or (copilot-accept-completion)
-      (company-yasnippet-or-completion)
-      (indent-for-tab-command)))
+    (interactive)
+    (or (copilot-accept-completion)
+        (company-yasnippet-or-completion)
+        (indent-for-tab-command)))
 
-(define-key global-map (kbd "<tab>") #'rk/copilot-tab)
+  (define-key global-map (kbd "<tab>") #'rk/copilot-tab)
 
-;; set up cancel to work with copilot
-;;
-(defun rk/copilot-quit ()
-  "Run `copilot-clear-overlay' or `keyboard-quit'. If copilot is
+  ;; set up cancel to work with copilot
+  ;;
+  (defun rk/copilot-quit ()
+    "Run `copilot-clear-overlay' or `keyboard-quit'. If copilot is
 cleared, make sure the overlay doesn't come back too soon."
-  (interactive)
-  (condition-case err
-      (when copilot--overlay
-        (lexical-let ((pre-copilot-disable-predicates copilot-disable-predicates))
-          (setq copilot-disable-predicates (list (lambda () t)))
-          (copilot-clear-overlay)
-          (run-with-idle-timer
-           1.0
-           nil
-           (lambda ()
-             (setq copilot-disable-predicates pre-copilot-disable-predicates)))))
-    (error handler)))
+    (interactive)
+    (condition-case err
+        (when copilot--overlay
+          (lexical-let ((pre-copilot-disable-predicates copilot-disable-predicates))
+                       (setq copilot-disable-predicates (list (lambda () t)))
+                       (copilot-clear-overlay)
+                       (run-with-idle-timer
+                        1.0
+                        nil
+                        (lambda ()
+                          (setq copilot-disable-predicates pre-copilot-disable-predicates)))))
+      (error handler)))
 
-(advice-add 'keyboard-quit :before #'rk/copilot-quit)
+  (advice-add 'keyboard-quit :before #'rk/copilot-quit)
 
-)
+  )
 
 ;; Whenever you reconfigure a package, make sure to wrap your config in an
 ;; `after!' block, otherwise Doom's defaults may override your settings. E.g.
@@ -379,12 +382,12 @@ cleared, make sure the overlay doesn't come back too soon."
 ;;
 
 (use-package! cider
-              :after clojure-mode
-              :config (set-lookup-handlers! 'cider-mode nil))
+  :after clojure-mode
+  :config (set-lookup-handlers! 'cider-mode nil))
 
 (use-package! clj-refactor
-              :after clojure-mode
-              :config (set-lookup-handlers! 'clj-refactor-mode nil))
+  :after clojure-mode
+  :config (set-lookup-handlers! 'clj-refactor-mode nil))
 
 ;; accept completion from copilot and fallback to company
 (use-package! copilot
@@ -434,3 +437,7 @@ cleared, make sure the overlay doesn't come back too soon."
 (global-set-key (kbd "s-,") 'cider-repl-set-ns)
 (global-set-key (kbd "s-K") 'cider-repl-clear-buffer)
 (global-set-key (kbd "s-i") 'push-run-test-at-point)
+
+(defun reset-ns ()
+  (cider-interactive-eval "(ns user)"))
+(global-set-key (kbd "s-y") 'reset-ns)
