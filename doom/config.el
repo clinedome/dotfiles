@@ -344,9 +344,11 @@ cleared, make sure the overlay doesn't come back too soon."
                           (setq copilot-disable-predicates pre-copilot-disable-predicates)))))
       (error handler)))
 
-  (advice-add 'keyboard-quit :before #'rk/copilot-quit)
+    (advice-add 'keyboard-quit :before #'rk/copilot-quit)
 
   )
+
+
 
 ;; Whenever you reconfigure a package, make sure to wrap your config in an
 ;; `after!' block, otherwise Doom's defaults may override your settings. E.g.
